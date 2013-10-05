@@ -5,6 +5,7 @@ module.exports = function(config) {
     files: [
       'bower_components/jquery/jquery.js',
       'bower_components/underscore/underscore.js',
+      'bower_components/jasmine-jquery/lib/jasmine-jquery.js',
       'lib/**/*.js',
       'test/matchers.js',
       'test/**/*Spec.js',

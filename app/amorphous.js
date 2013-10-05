@@ -7,7 +7,7 @@ var Amorphous = window.Amorphous = (function() {
         function createTopology(configuration) {
             return {
                 jtopology: (function() {
-                    var x = $('<div class="topology"><button>hello</button></div>');
+                    var x = $('<canvas class="topology" width="500" height="500"></canvas>');
                     self.jparent.append(x);
                     return x;
                 })()

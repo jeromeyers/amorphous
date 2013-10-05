@@ -17,6 +17,7 @@
         "underscore": "underscore#1.5.2"
     },
     "devDependencies": {
+        "jasmine-jquery": "#1.5.91"
     },
     "homepage": "https://github.com/jeromeyers/amorphous",
     "description": "testing",

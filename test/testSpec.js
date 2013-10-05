@@ -17,7 +17,7 @@ describe("Amorphous", function() {
     });
 
     it('test container contains topology element', function() {
-        expect(jcontainer.find('.topology').length).toBe(1);
+        expect(jcontainer.find('.topology')).toBe('canvas');
     });
 
 
