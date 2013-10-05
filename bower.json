@@ -1,0 +1,25 @@
+{
+    "name": "amorphous",
+    "version": "0.0.1",
+    "main": "path/to/main.css",
+    "ignore": [
+        ".jshintrc",
+        "**/*.txt",
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "backbone": "backbone",
+        "jquery": "jquery",
+        "underscore": "underscore"
+    },
+    "devDependencies": {
+    },
+    "homepage": "https://github.com/jeromeyers/amorphous",
+    "description": "testing",
+    "license": "MIT",
+    "private": true
+}
