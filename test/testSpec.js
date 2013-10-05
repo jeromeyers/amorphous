@@ -19,7 +19,7 @@ describe("Amorphous", function() {
         expect(amorphous.particleParameters).not.toBeNull()
     })
 
-    it('should have particle parameters to have colors', function(){
+    it('particle parameters has required fields', function(){
         expect(amorphous.particleParameters).toHave(['regions', 'particles'])
     })
 
