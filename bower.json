@@ -12,9 +12,9 @@
         "tests"
     ],
     "dependencies": {
-        "backbone": "backbone",
-        "jquery": "jquery",
-        "underscore": "underscore"
+        "backbone": "backbone#1.0.0",
+        "jquery": "jquery#2.0.3",
+        "underscore": "underscore#1.5.2"
     },
     "devDependencies": {
     },
