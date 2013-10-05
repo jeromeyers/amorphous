@@ -1,0 +1,3 @@
+function paintEm(){
+    return true;
+}
