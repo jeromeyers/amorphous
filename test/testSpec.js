@@ -1,10 +1,15 @@
 describe("Amorphous", function() {
-
-  it('it should paint them', function(){
-      expect(paintEm()).toBe(true);
-  });
+    beforeEach(function() {
+        amorphous = new Amorphous({});
+    });
+    it('there should be an amorphous', function() {
+        expect(amorphous).not.toBeNull();
+    });
     it('a region should exist', function() {
-        expect(getRegion()).toBeTruthy();
-    })
+        expect(amorphous.region).toBeTruthy();
+    });
+    it('it should paint them', function() {
+        expect(amorphous.paintEm()).toBe(true);
+    });
 });
 
