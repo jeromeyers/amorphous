@@ -3,6 +3,7 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['jasmine'], //see doc: http://pivotal.github.io/jasmine/
     files: [
+      'test/matchers.js',
       'test/**/*Spec.js',
       'app/*.js'
     ],
