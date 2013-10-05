@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>amorphous</title>
+
+    <link rel="stylesheet" href="css/main.css" type="text/css"/>
+
+    <script type="text/javascript" src="bower_components/underscore/underscore.js"></script>
+    <script type="text/javascript" src="bower_components/backbone/backbone.js"></script>
+    <script type="text/javascript" src="bower_components/jquery/jquery.js"></script>
+    <script type="text/javascript" src="lib/extensions/string/format.js"></script>
+    <script type="text/javascript" src="lib/u.js"></script>
+    <script type="text/javascript" src="app/amorphous.js"></script>
+    <script>
+        $(function() {
+            var amorphous = new Amorphous($('.amorphous-container'), { width: 234, height: 343 });
+            amorphous.paintEm();
+            console.log(amorphous);
+        });
+    </script>
+</head>
+<body>
+<div class="amorphous-container"></div>
+</body>
+</html>

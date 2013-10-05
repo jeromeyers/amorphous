@@ -20,10 +20,11 @@ describe("Amorphous", function() {
         expect(jcontainer.find('.topology')).toBe('canvas');
     });
 
-
+    it('creating ')
 
     it('it should paint them', function() {
-        expect(amorphous.paintEm()).toBe(true);
+        amorphous.paintEm();
+        expect(_.keys(amorphous.particles).length === amorphous.particleParameters.particles).toBe(true);
     });
 
     it('should have particle parameters', function(){
