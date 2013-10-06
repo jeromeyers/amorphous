@@ -74,8 +74,8 @@ var Amorphous = window.Amorphous = (function() {
 
             function paintAll() {
                 var context = self.topology.getContext();
-                _(self.particles).each(function(particle, index) {
-                    context.fillStyle = self.regionColors[u.existy(particle.temporaryRegionId) ? particle.temporaryRegionId : particle.regionId];
+                _(self.particles).each(function(particle) {
+                    context.fillStyle = self.regionColors[u.existy(particle.temporaryRegionId) ? particle.temporaryRegionId : (particle.regionId || 1)];
                     context.fillRect(particle.x, particle.y, 2, 2);
                     if (u.existy(particle.temporaryRegionId)) particle.temporaryRegionId = null;
                 });
@@ -103,23 +103,58 @@ var Amorphous = window.Amorphous = (function() {
             }
             initNeightbors();
 
-            function glimmer() {
-                (function myLoop(i) {
-                    setTimeout(function() {
-                        self.topology.clear();
-                        var particle = self.particles[i-1];
-                        particle.temporaryRegionId = 0;
-                        _.each(particle.neighbors, function(neighbor) {
-                            neighbor.temporaryRegionId = 0;
-                        });
-                        paintAll();
-                        console.log(i);
-                        if (--i) myLoop(i);
-                        else paintAll();
-                    }, 100)
-                })(_(self.particles).keys().length);
+            function glimmerNeighbors() {
+                var iterations = _(self.particles).keys().length;
+                u.spaceOutSoManyRuns(100, iterations, function(index) {
+                    self.topology.clear();
+                    var particle = self.particles[index - 1];
+                    particle.temporaryRegionId = 0;
+                    _.each(particle.neighbors, function(neighbor) {
+                        neighbor.temporaryRegionId = 0;
+                    });
+                    paintAll();
+                }, paintAll);
             }
-            glimmer();
+//            glimmerNeighbors();  // Takes a long time, maybe just glimmer one out of 10
+
+            var changed = 0;
+            function localClustering() {
+                var used = {};
+                function cluster() {
+                    console.log('cluster');
+                    _(self.particles).each(function(particle) {
+                        if (!u.existy(used[particle.id])) {
+                            var min = particle.regionId;
+                            var minId = particle.id;
+                            _.each(particle.neighbors, function(neighbor) {
+                                if (neighbor.regionId < min && !u.existy(used[neighbor.id])) {
+                                    min = neighbor.regionId;
+                                    minId = neighbor.id;
+                                }
+                            });
+                            if (particle.regionId !== min) {
+                                particle.regionId = min;
+                                used[particle.id] = true;
+                                changed++;
+                            }
+                        }
+                    });
+                }
+                var iterations = 10;
+                u.spaceOutSoManyRuns(100, iterations,
+                    function() {
+                        cluster();
+                        paintAll();
+                        console.log(changed);
+                    },
+                paintAll);
+            }
+            localClustering();
+
+            function regularize() {
+
+            }
+            regularize();
 
             return true;
         }
