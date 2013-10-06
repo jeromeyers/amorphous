@@ -36,8 +36,9 @@ var Amorphous = window.Amorphous = (function() {
         this.topology = createTopology();
 
         this.particleParameters = {
-            regions: u.existy(options.regions) ? options.regions : 5,
-            particles: u.existy(options.particles) ? options.particles : 1000
+            regions: u.existy(options.regions) ? options.regions : 5, // this is more properly a part of topologyOptions
+            particles: u.existy(options.particles) ? options.particles : 1000,
+            neighbors: 20
         };
 
         // Particles
@@ -56,18 +57,30 @@ var Amorphous = window.Amorphous = (function() {
             '#FF3322',
             '#006600'
         ];
+        this.regions = [];
+        do {
+            var candidate = u.getRandomNumber(self.particleParameters.regions);
+            if (!u.existy(self.regions[candidate])) {
+                self.regions.push(candidate);
+            }
+        } while (this.regions.length < self.particleParameters.regions);
+
         var particleCount = 0;
         this.Particle = function(config) {
             this.id = particleCount++;
             this.x = u.getRandomNumber(self.topologyOptions.width);
             this.y = u.getRandomNumber(self.topologyOptions.height);
-            this.regionId = u.getRandomNumber(self.particleParameters.regions);
+            this.regionId = self.regions[u.getRandomNumber(self.particleParameters.regions)];
             this.neighbors = [];
         }
+        this.byXandY = {};
         this.paintEm = function() {
             function createAll() {
                 for (var i = 0; i < self.particleParameters.particles; i++) {
-                    self.particles[i] = new self.Particle({});
+                    var particle = new self.Particle({});
+                    self.particles[i] = particle;
+                    if (!u.existy(self.byXandY[particle.x])) self.byXandY[particle.x] = {};
+                    self.byXandY[particle.x][particle.y] = particle;
                 }
             }
             createAll();
@@ -83,29 +96,87 @@ var Amorphous = window.Amorphous = (function() {
             paintAll();
 
             function initNeightbors() {
-                function isNeighbor(particle1, particle2) {
-                    if (particle2.x < (particle1.x + 20) && particle2.x > (particle1.x - 20)) {
-                        if (particle2.y < (particle1.y + 20) && particle2.y > (particle1.y - 20)) {
-                            return true;
-                        }
+                var directions = {
+                    down: function(y) {
+                        y.y += 1;
+                    },
+                    right: function(y) {
+                        y.x += 1;
+                    },
+                    left: function(y) {
+                        y.x -= 1;
+                    },
+                    up: function(y) {
+                        y.y -= 1;
+                    },
+                    changeDirection: function(y) {
+                        y.direction = u.cycleThroughArray(y.ops, y.direction);
+                        y.timesDirectionCalled = 0;
+                    },
+                    isValidCoordinate: function(y) {
+                        if (y.x < 0 || y.x > self.topologyOptions.width) return false;
+                        if (y.y < 0 || y.y > self.topologyOptions.height) return false;
+                        return true;
                     }
-                    return false;
-                }
-                _(self.particles).each(function(particle, index) {
-                    _(self.particles).each(function(innerparticle) {
-                        if (particle.id !== innerparticle.id) {
-                            if (isNeighbor(particle, innerparticle))  {
-                                particle.neighbors.push(innerparticle);
+                };
+                _(self.particles).each(function(particle) {
+                    var y = { radius: 1, found: 0, offset: 1, ticktock: 1, x: particle.x, y: particle.y, direction: 'right', ops:['right', 'down', 'left', 'up'], timesDirectionCalled: 0 };
+                    u.giveYtoXuntilZisTrue(y, function(y) {
+                        // mutate x,y by moving in direction but don't do so more than offset number of times
+                        directions[y.direction](y);
+                        y.timesDirectionCalled += 1;
+                        if (y.offset === y.timesDirectionCalled) {
+                            directions.changeDirection(y);
+                        }
+
+                        // apply function
+                        if (directions.isValidCoordinate(y)) {
+                            var potentialNeighbor = u.existy(self.byXandY[y.x]) ? self.byXandY[y.x][y.y] : null;
+                            if (u.existy(potentialNeighbor) && particle.neighbors.indexOf(potentialNeighbor) === -1) {
+                                particle.neighbors.push(potentialNeighbor);
+                                y.found += 1;
                             }
                         }
+
+                        // do ticktocking
+                        if (y.ticktock === 1) y.ticktock = 2;
+                        else {
+                            y.offset += 1;
+                            y.ticktock = 1;
+                        }
+                    }, function(y) {
+                        // loop through until we've found as many neighbors as we want
+                        if (y.found >= self.particleParameters.neighbors || (y.x > self.topologyOptions.width && y.y < self.topologyOptions.height)) {
+                            return true;
+                        }
+                        return false;
                     });
                 });
+
+
+                //                function isNeighbor(particle1, particle2, radius) {
+                //                    if (particle2.x < (particle1.x + radius) && particle2.x > (particle1.x - radius)) {
+                //                        if (particle2.y < (particle1.y + radius) && particle2.y > (particle1.y - radius)) {
+                //                            return true;
+                //                        }
+                //                    }
+                //                    return false;
+                //                }
+                //                _(self.particles).each(function(particle) {
+                //                    _(self.particles).each(function(innerparticle) {
+                //                        if (particle.id !== innerparticle.id) {
+                //                            if (isNeighbor(particle, innerparticle))  {
+                //                                particle.neighbors.push(innerparticle);
+                //                            }
+                //                        }
+                //                    });
+                //                });
             }
             initNeightbors();
 
             function glimmerNeighbors() {
                 var iterations = _(self.particles).keys().length;
-                u.spaceOutSoManyRuns(100, iterations, function(index) {
+                u.spaceOutSoManyRunsOf(100, iterations, function(index) {
                     self.topology.clear();
                     var particle = self.particles[index - 1];
                     particle.temporaryRegionId = 0;
@@ -117,12 +188,26 @@ var Amorphous = window.Amorphous = (function() {
             }
 //            glimmerNeighbors();  // Takes a long time, maybe just glimmer one out of 10
 
+            function loopParticlesByEach(func) {
+                _(self.particles).each(func);
+            }
+            function loopParticlesByXandY(func) {
+                for (var x in self.byXandY) {
+                    for (var y in self.byXandY[x]) {
+                        var particle = self.byXandY[x][y];
+                        if (u.existy(particle)) func(particle);
+                    }
+                }
+            }
+
             var changed = 0;
             function localClustering() {
-                var used = {};
                 function cluster() {
-                    console.log('cluster');
-                    _(self.particles).each(function(particle) {
+                    var loop = { cur: 0, max: self.regions.length };
+                    var used = {};
+                    loopParticlesByXandY(function(particle) {
+                        loop = u.cycle(loop);
+                        if (loop.cur === 0) used = {};
                         if (!u.existy(used[particle.id])) {
                             var min = particle.regionId;
                             var minId = particle.id;
@@ -134,20 +219,16 @@ var Amorphous = window.Amorphous = (function() {
                             });
                             if (particle.regionId !== min) {
                                 particle.regionId = min;
-                                used[particle.id] = true;
+                                used[min] = true;
                                 changed++;
                             }
                         }
                     });
                 }
-                var iterations = 10;
-                u.spaceOutSoManyRuns(100, iterations,
-                    function() {
-                        cluster();
-                        paintAll();
-                        console.log(changed);
-                    },
-                paintAll);
+                u.spaceOutSoManyRunsOf(100, 10, function() {
+                    cluster();
+                    paintAll();
+                }, paintAll);
             }
             localClustering();
 
